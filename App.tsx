@@ -1,114 +1,86 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
-
 import React from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import {SafeAreaView, StyleSheet, Text, View, TouchableOpacity} from 'react-native';
+import {configureLocalization, setLanguage, useLocalization} from './dist';
+import {LocalizationType} from './dist/types';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-const Section: React.FC<{
-  title: string;
-}> = ({children, title}) => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
+const en = {
+  welcome: 'Welcome',
+  hello: 'Hello {name}',
 };
 
-const App = () => {
-  const isDarkMode = useColorScheme() === 'dark';
+const fr = {
+  welcome: 'Bienvenue',
+  hello: 'Bonjour {name}',
+};
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+const localizations = {en, fr};
+
+configureLocalization(localizations, 'en');
+
+type Localization = LocalizationType<typeof localizations>;
+
+const App = () => {
+  const {currentLanguage, t} = useLocalization<Localization>();
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
+    <SafeAreaView>
+      <Text style={styles.languageText}>Language: {currentLanguage}</Text>
+      <View style={styles.contentView}>
+        <View style={styles.buttonsView}>
+          <TouchableOpacity style={styles.button} onPress={() => setLanguage<Localization>('en')}>
+            <Text style={styles.buttonText}>Set language: EN</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => setLanguage<Localization>('fr')}>
+            <Text style={styles.buttonText}>Set language: FR</Text>
+          </TouchableOpacity>
         </View>
-      </ScrollView>
+        <Text style={styles.welcomeText}>{t('welcome')}</Text>
+        <View style={styles.moreTextView}>
+          <Text style={styles.text}>{t('hello', {name: 'John'})}</Text>
+        </View>
+      </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  languageText: {
+    fontSize: 16,
+    color: '#333',
+    marginHorizontal: 15,
   },
-  sectionTitle: {
+  contentView: {
+    paddingTop: 20,
+    paddingHorizontal: 15,
+  },
+  welcomeText: {
     fontSize: 24,
-    fontWeight: '600',
+    textAlign: 'center',
+    color: '#333',
+    marginTop: 20,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  buttonsView: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
-  highlight: {
-    fontWeight: '700',
+  button: {
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    marginHorizontal: 5,
+    backgroundColor: '#ccc',
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: '#333',
+    fontSize: 16,
+  },
+  moreTextView: {
+    paddingTop: 20,
+  },
+  text: {
+    color: '#333',
+    fontSize: 16,
   },
 });
 
