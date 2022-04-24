@@ -14,7 +14,7 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint-fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "lint-fix-build": "eslint ./dist --ext .js,.jsx,.ts,.tsx --fix",
-    "build": "rm -rf ./dist && tsc --project tsconfig.build.json && yarn run lint-fix-build",
+    "build": "yarn run test && rm -rf ./dist && tsc --project tsconfig.build.json && yarn run lint-fix-build",
     "release-dry": "yarn run build && npm publish --access public --dry-run",
     "release": "yarn run build && npm publish --access public"
   },
