@@ -37,7 +37,7 @@ export function translate<T extends LocalizationType<AnyLocalizationType>>(
   language: keyof T,
   key: keyof T[keyof T],
   args?: TranslateArgs,
-): AnyObjectKey {
+): string {
   const lang = language in _localizations ? language : _defaultLanguage;
 
   if (key in _localizations[lang]) {
@@ -53,7 +53,7 @@ export function translate<T extends LocalizationType<AnyLocalizationType>>(
     return text;
   }
 
-  return key;
+  return `${key}`;
 }
 
 export function setLanguage<T extends LocalizationType<AnyLocalizationType>>(
