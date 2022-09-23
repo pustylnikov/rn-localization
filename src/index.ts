@@ -6,6 +6,7 @@ import {
   LocalizationType,
   TranslateArgs,
 } from './types';
+import {NativeModules, Platform} from 'react-native';
 
 const _listeners = new Map<symbol, ListenerType<AnyLocalizationType>>();
 
@@ -17,11 +18,11 @@ let _defaultLanguage: AnyObjectKey;
 
 export function configureLocalization<T extends LocalizationType<AnyLocalizationType>>(
   localizations: T,
-  defaultLanguage: keyof T,
+  fallbackLanguage?: keyof T,
 ): void {
   _localizations = localizations;
-  _currentLanguage = defaultLanguage;
-  _defaultLanguage = _currentLanguage;
+  _defaultLanguage = detectDefaultLanguage<keyof T>(Object.keys(localizations), fallbackLanguage);
+  _currentLanguage = _defaultLanguage;
 }
 
 export function addListener<T extends LocalizationType<AnyLocalizationType>>(
@@ -96,4 +97,42 @@ export function useLocalization<T extends LocalizationType<AnyLocalizationType>>
     }),
     [currentLanguage, t],
   );
+}
+
+export function getDefaultLanguage<T extends LocalizationType<AnyLocalizationType>>(): keyof T {
+  return _defaultLanguage;
+}
+
+export function detectDefaultLanguage<T extends keyof LocalizationType<AnyLocalizationType>>(
+  supportedLanguages: T[],
+  fallbackLanguage?: T,
+): T {
+  try {
+    const deviceLanguages = getDeviceLanguages();
+
+    for (let i = 0; i < deviceLanguages.length; i++) {
+      const [language] = deviceLanguages[i].toLowerCase().split('-') as [T];
+      if (supportedLanguages.includes(language)) {
+        return language;
+      }
+    }
+  } catch (e) {}
+
+  return fallbackLanguage || supportedLanguages[0];
+}
+
+function getDeviceLanguages(): string[] {
+  if (Platform.OS === 'ios') {
+    const deviceLanguages = NativeModules.SettingsManager.settings.AppleLanguages;
+    if (deviceLanguages && Array.isArray(deviceLanguages)) {
+      return deviceLanguages;
+    }
+  } else {
+    const deviceLanguage = NativeModules.I18nManager.localeIdentifier;
+    if (deviceLanguage && typeof deviceLanguage === 'string') {
+      return [deviceLanguage];
+    }
+  }
+
+  return [];
 }
