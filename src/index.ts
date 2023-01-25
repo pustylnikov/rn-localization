@@ -26,10 +26,7 @@ function $setCurrentLanguage<T extends Translations<T>>(value: keyof T): void {
   $currentLanguage = value;
 }
 
-export function $getListeners<T extends Translations<T>>(): Map<
-  symbol,
-  LocaleListener<Translations<T>>
-> {
+function $getListeners<T extends Translations<T>>(): Map<symbol, LocaleListener<Translations<T>>> {
   return $listeners;
 }
 
