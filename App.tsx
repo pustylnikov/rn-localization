@@ -1,7 +1,6 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {SafeAreaView, StyleSheet, Text, View, TouchableOpacity} from 'react-native';
-import {configureLocalization, setLanguage, useLocalization} from './dist';
-import {LocalizationType} from './dist/types';
+import {createLocalization} from './dist';
 
 const en = {
   welcome: 'Welcome',
@@ -15,22 +14,30 @@ const fr = {
 
 const localizations = {en, fr};
 
-configureLocalization(localizations, 'en');
-
-type Localization = LocalizationType<typeof localizations>;
+const {useLocalization, setLanguage, addListener} = createLocalization(localizations, 'en');
 
 const App = () => {
-  const {currentLanguage, t} = useLocalization<Localization>();
+  const {currentLanguage, t} = useLocalization();
+
+  useEffect(() => {
+    const unsubscribe = addListener(language => {
+      console.log(language); // 'en' | 'fr'
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   return (
     <SafeAreaView>
       <Text style={styles.languageText}>Language: {currentLanguage}</Text>
       <View style={styles.contentView}>
         <View style={styles.buttonsView}>
-          <TouchableOpacity style={styles.button} onPress={() => setLanguage<Localization>('en')}>
+          <TouchableOpacity style={styles.button} onPress={() => setLanguage('en')}>
             <Text style={styles.buttonText}>Set language: EN</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => setLanguage<Localization>('fr')}>
+          <TouchableOpacity style={styles.button} onPress={() => setLanguage('fr')}>
             <Text style={styles.buttonText}>Set language: FR</Text>
           </TouchableOpacity>
         </View>

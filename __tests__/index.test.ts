@@ -1,4 +1,4 @@
-import {addListener, configureLocalization, getLanguage, setLanguage, translate} from '../src';
+import {addListener, createLocalization, getLanguage, setLanguage, translate} from '../src';
 
 beforeEach(() => {
   const en = {
@@ -13,7 +13,7 @@ beforeEach(() => {
 
   const languages = {en, fr};
 
-  configureLocalization(languages, 'en');
+  createLocalization(languages, 'en');
 });
 
 it('test "getLanguage & setLanguage" functions', () => {
@@ -23,12 +23,12 @@ it('test "getLanguage & setLanguage" functions', () => {
 });
 
 it('test "translate" function', () => {
-  expect(translate('en', 'WELCOME')).toBe('Welcome');
-  expect(translate('fr', 'WELCOME')).toBe('Bienvenue');
-  expect(translate('en', 'HELLO')).toBe('Hello {name}');
-  expect(translate('en', 'HELLO', {name: 'John'})).toBe('Hello John');
-  expect(translate('fr', 'HELLO')).toBe('Bonjour {name}');
-  expect(translate('fr', 'HELLO', {name: 'John'})).toBe('Bonjour John');
+  expect(translate('WELCOME', undefined, 'en')).toBe('Welcome');
+  expect(translate('WELCOME', undefined, 'fr')).toBe('Bienvenue');
+  expect(translate('HELLO', null, 'en')).toBe('Hello {name}');
+  expect(translate('HELLO', {name: 'John'}, 'en')).toBe('Hello John');
+  expect(translate('HELLO', null, 'fr')).toBe('Bonjour {name}');
+  expect(translate('HELLO', {name: 'John'}, 'fr')).toBe('Bonjour John');
 });
 
 it('test "addListener" function', () => {

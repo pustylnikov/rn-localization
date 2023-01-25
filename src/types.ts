@@ -1,15 +1,13 @@
-export type AnyObjectKey = string | number | symbol;
+export type Args = {[key: string]: string | number | null | undefined};
 
-export type AnyObject<T> = {[k: AnyObjectKey]: T};
+export type TranslationKeys<T> = keyof T[keyof T];
 
-export type TranslateArgs = {[key: string]: string | number | null | undefined};
+export type TranslateArgs<T> = [TranslationKeys<T>, (Args | null)?, (keyof T)?];
 
-export type ListenerType<T extends AnyLocalizationType> = (language: keyof T) => void;
+export type LocaleListener<T extends Translations<T>> = (language: keyof T) => void;
 
-export type AnyLocalizationType = {[k: AnyObjectKey]: AnyObject<string>};
-
-export type LocalizationType<T extends AnyLocalizationType> = {
-  [I in keyof T]: {
-    [J in keyof T[I]]: string;
+export type Translations<T> = {
+  [P in keyof T]: {
+    [Q in keyof T[P]]: string;
   };
 };

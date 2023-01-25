@@ -1,51 +1,90 @@
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import {
-  AnyLocalizationType,
-  AnyObjectKey,
-  ListenerType,
-  LocalizationType,
-  TranslateArgs,
-} from './types';
+import {LocaleListener, Translations, Args, TranslateArgs} from './types';
 import {NativeModules, Platform} from 'react-native';
 
-const _listeners = new Map<symbol, ListenerType<AnyLocalizationType>>();
+const $listeners = new Map<symbol, LocaleListener<Translations<any>>>();
 
-let _localizations: AnyLocalizationType;
+let $localizations: any;
 
-let _currentLanguage: AnyObjectKey;
+let $currentLanguage: any;
 
-let _defaultLanguage: AnyObjectKey;
+let $defaultLanguage: any;
 
-export function configureLocalization<T extends LocalizationType<AnyLocalizationType>>(
+function $setLocalizations<T extends Translations<T>>(value: T): void {
+  $localizations = value;
+}
+
+function $getLocalizations<T extends Translations<T>>(): T {
+  return $localizations;
+}
+
+function $setDefaultLanguage<T extends Translations<T>>(value: keyof T): void {
+  $defaultLanguage = value;
+}
+
+function $setCurrentLanguage<T extends Translations<T>>(value: keyof T): void {
+  $currentLanguage = value;
+}
+
+export function $getListeners<T extends Translations<T>>(): Map<
+  symbol,
+  LocaleListener<Translations<T>>
+> {
+  return $listeners;
+}
+
+export function getLanguage<T extends Translations<T>>(): keyof T {
+  return $currentLanguage;
+}
+
+export function setLanguage<T extends Translations<T>>(value: keyof T): void {
+  if (getLanguage<T>() !== value) {
+    $setCurrentLanguage<T>(value);
+    $getListeners<T>().forEach(listener => {
+      listener(value);
+    });
+  }
+}
+
+export function addListener<T extends Translations<T>>(listener: LocaleListener<T>): () => boolean {
+  const key = Symbol();
+  $listeners.set(key, listener);
+
+  return () => $listeners.delete(key);
+}
+
+export function createLocalization<T extends Translations<T>>(
   localizations: T,
   fallbackLanguage?: keyof T,
-): void {
-  _localizations = localizations;
-  _defaultLanguage = detectDefaultLanguage<keyof T>(Object.keys(localizations), fallbackLanguage);
-  _currentLanguage = _defaultLanguage;
+) {
+  $setLocalizations<T>(localizations);
+  const defaultLanguage = detectDefaultLanguage(
+    Object.keys(localizations),
+    fallbackLanguage as string,
+  ) as keyof T;
+  $setDefaultLanguage<T>(defaultLanguage);
+  $setCurrentLanguage<T>(defaultLanguage);
+
+  return {
+    useLocalization: () => useLocalization<T>(),
+    translate: (...args: TranslateArgs<T>) => translate<T>(...args),
+    addListener: (listener: LocaleListener<T>) => addListener<T>(listener),
+    setLanguage: (value: keyof T) => setLanguage<T>(value),
+    getLanguage: () => getLanguage<T>(),
+    getDefaultLanguage: () => getDefaultLanguage<T>(),
+  };
 }
 
-export function addListener<T extends LocalizationType<AnyLocalizationType>>(
-  listener: ListenerType<T>,
-): () => boolean {
-  const key = Symbol();
-  _listeners.set(key, listener);
+export function translate<T extends Translations<T>>(...args: TranslateArgs<T>): string {
+  const [key, values, language = getLanguage<T>()] = args;
+  const localization = $getLocalizations<T>();
+  const lang = language in localization ? language : getDefaultLanguage<T>();
 
-  return () => _listeners.delete(key);
-}
-
-export function translate<T extends LocalizationType<AnyLocalizationType>>(
-  language: keyof T,
-  key: keyof T[keyof T],
-  args?: TranslateArgs,
-): string {
-  const lang = language in _localizations ? language : _defaultLanguage;
-
-  if (key in _localizations[lang]) {
-    const text = _localizations[lang][key];
-    if (args) {
-      return text.replace(/\{([a-zA-Z0-9]+)\}/gm, (...match) => {
-        const replacer = args[match[1]];
+  if (key in localization[lang]) {
+    const text = localization[lang][key];
+    if (values) {
+      return text.replace(/\{([a-zA-Z0-9]+)\}/gm, (...match: any[]) => {
+        const replacer = values[match[1]];
 
         return `${replacer ?? (replacer === null ? '' : match[0])}`;
       });
@@ -57,23 +96,8 @@ export function translate<T extends LocalizationType<AnyLocalizationType>>(
   return `${key}`;
 }
 
-export function setLanguage<T extends LocalizationType<AnyLocalizationType>>(
-  language: keyof T,
-): void {
-  if (_currentLanguage !== language) {
-    _currentLanguage = language;
-    _listeners.forEach(listener => {
-      listener(language);
-    });
-  }
-}
-
-export function getLanguage<T extends LocalizationType<AnyLocalizationType>>(): keyof T {
-  return _currentLanguage;
-}
-
-export function useLocalization<T extends LocalizationType<AnyLocalizationType>>() {
-  const [currentLanguage, setCurrentLanguage] = useState<keyof T>(_currentLanguage);
+export function useLocalization<T extends Translations<T>>() {
+  const [currentLanguage, setCurrentLanguage] = useState(getLanguage<T>());
 
   useEffect(() => {
     const unsubscribe = addListener<T>((nextLanguage: keyof T) => {
@@ -86,7 +110,7 @@ export function useLocalization<T extends LocalizationType<AnyLocalizationType>>
   }, []);
 
   const t = useCallback(
-    (key: keyof T[keyof T], args?: TranslateArgs) => translate<T>(currentLanguage, key, args),
+    (key: keyof T[keyof T], values?: Args) => translate<T>(key, values, currentLanguage),
     [currentLanguage],
   );
 
@@ -99,19 +123,16 @@ export function useLocalization<T extends LocalizationType<AnyLocalizationType>>
   );
 }
 
-export function getDefaultLanguage<T extends LocalizationType<AnyLocalizationType>>(): keyof T {
-  return _defaultLanguage;
+export function getDefaultLanguage<T extends Translations<T>>(): keyof T {
+  return $defaultLanguage;
 }
 
-export function detectDefaultLanguage<T extends keyof LocalizationType<AnyLocalizationType>>(
-  supportedLanguages: T[],
-  fallbackLanguage?: T,
-): T {
+function detectDefaultLanguage(supportedLanguages: string[], fallbackLanguage?: string): string {
   try {
     const deviceLanguages = getDeviceLanguages();
 
     for (let i = 0; i < deviceLanguages.length; i++) {
-      const [language] = deviceLanguages[i].toLowerCase().split('-') as [T];
+      const [language] = deviceLanguages[i].toLowerCase().split('-');
       if (supportedLanguages.includes(language)) {
         return language;
       }
