@@ -22,7 +22,7 @@ First, you need to create a localization context by passing an object containing
 language.
 
 ```tsx
-import { createLocalization } from 'localization';
+import { createLocalization } from '@anvilapp/rn-localization';
 
 const en = {
   welcome: 'Welcome',
@@ -69,7 +69,7 @@ const unsubscribe = addListener(language => {
 ```tsx
 import React, { useEffect } from 'react';
 import { SafeAreaView, Text } from 'react-native';
-import { createLocalization } from 'localization';
+import { createLocalization } from '@anvilapp/rn-localization';
 
 const en = {
   welcome: 'Welcome',
