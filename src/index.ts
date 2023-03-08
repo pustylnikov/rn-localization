@@ -37,13 +37,28 @@ export function getLanguage<T extends Translations<T>>(): keyof T {
 export function setLanguage<T extends Translations<T>>(value: keyof T): void {
   if (getLanguage<T>() !== value) {
     $setCurrentLanguage<T>(value);
-    $getListeners<T>().forEach(listener => {
-      listener(value);
+    const listeners = $getListeners<T>();
+
+    let count = 0;
+    let batch: LocaleListener<Translations<T>>[] = [];
+    listeners.forEach(listener => {
+      batch.push(listener);
+      count++;
+      if (count === 10 || count === listeners.size) {
+        const $batch = batch;
+        setImmediate(() => {
+          $batch.forEach(f => f(value));
+        });
+        batch = [];
+        count = 0;
+      }
     });
   }
 }
 
-export function addListener<T extends Translations<T>>(listener: LocaleListener<T>): () => boolean {
+export function registerListener<T extends Translations<T>>(
+  listener: LocaleListener<T>,
+): () => boolean {
   const key = Symbol();
   $listeners.set(key, listener);
 
@@ -65,7 +80,7 @@ export function createLocalization<T extends Translations<T>>(
   return {
     useLocalization: () => useLocalization<T>(),
     translate: (...args: TranslateArgs<T>) => translate<T>(...args),
-    addListener: (listener: LocaleListener<T>) => addListener<T>(listener),
+    registerListener: (listener: LocaleListener<T>) => registerListener<T>(listener),
     setLanguage: (value: keyof T) => setLanguage<T>(value),
     getLanguage: () => getLanguage<T>(),
     getDefaultLanguage: () => getDefaultLanguage<T>(),
@@ -97,7 +112,7 @@ export function useLocalization<T extends Translations<T>>() {
   const [currentLanguage, setCurrentLanguage] = useState(getLanguage<T>());
 
   useEffect(() => {
-    const unsubscribe = addListener<T>((nextLanguage: keyof T) => {
+    const unsubscribe = registerListener<T>((nextLanguage: keyof T) => {
       setCurrentLanguage(nextLanguage);
     });
 

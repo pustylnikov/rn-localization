@@ -1,6 +1,7 @@
 {
   "name": "@anvilapp/rn-localization",
-  "version": "0.3.0",
+  "version": "0.4.0",
+  "description": "A lightweight and flexible localization library for React Native.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "yura.pustylnikov@gmail.com",
@@ -19,9 +20,13 @@
     "release": "yarn run build && npm publish --access public"
   },
   "keywords": [
+    "react",
     "react-native",
-    "react native",
-    "localization"
+    "localization",
+    "i18n",
+    "internationalization",
+    "translation",
+    "language"
   ],
   "peerDependencies": {
     "react": ">=16",

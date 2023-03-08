@@ -1,4 +1,6 @@
-import {addListener, createLocalization, getLanguage, setLanguage, translate} from '../src';
+import {registerListener, createLocalization, getLanguage, setLanguage, translate} from '../src';
+
+jest.useFakeTimers();
 
 beforeEach(() => {
   const en = {
@@ -31,15 +33,18 @@ it('test "translate" function', () => {
   expect(translate('HELLO', {name: 'John'}, 'fr')).toBe('Bonjour John');
 });
 
-it('test "addListener" function', () => {
+it('test "registerListener" function', () => {
   const listenerMock = jest.fn(() => undefined);
-  const unsubscribe = addListener(listenerMock);
+  const unsubscribe = registerListener(listenerMock);
   setLanguage('fr');
+  jest.runAllTimers();
   expect(listenerMock).toBeCalled();
   setLanguage('fr');
   setLanguage('fr');
+  jest.runAllTimers();
   expect(listenerMock.mock.calls.length).toBe(1);
   setLanguage('en');
+  jest.runAllTimers();
   expect(listenerMock).toBeCalled();
   expect(listenerMock.mock.calls.length).toBe(2);
   expect(unsubscribe()).toBeTruthy();
