@@ -14,13 +14,13 @@ const fr = {
 
 const localizations = {en, fr};
 
-const {useLocalization, setLanguage, addListener} = createLocalization(localizations, 'en');
+const {useLocalization, setLanguage, registerListener} = createLocalization(localizations, 'en');
 
 const App = () => {
   const {currentLanguage, t} = useLocalization();
 
   useEffect(() => {
-    const unsubscribe = addListener(language => {
+    const unsubscribe = registerListener(language => {
       console.log(language); // 'en' | 'fr'
     });
 

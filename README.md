@@ -36,10 +36,10 @@ const fr = {
 
 const localizations = { en, fr };
 
-const { useLocalization, setLanguage, addListener } = createLocalization(localizations, 'en');
+const { useLocalization, setLanguage, registerListener } = createLocalization(localizations, 'en');
 ```
 
-Then, you can use the useLocalization hook to get the current language and a t function to translate keys.
+Then, you can use the `useLocalization` hook to get the current language and a t function to translate keys.
 
 ```tsx
 const { currentLanguage, t } = useLocalization();
@@ -49,17 +49,17 @@ console.log(t('welcome')); // 'Welcome'
 console.log(t('hello', { name: 'John' })); // 'Hello John'
 ```
 
-You can change the current language using the setLanguage function.
+You can change the current language using the `setLanguage` function.
 
 ```tsx
 setLanguage('fr');
 console.log(t('welcome')); // 'Bienvenue'
 ```
 
-You can also subscribe to language changes by using the addListener function.
+You can also subscribe to language changes by using the `registerListener` function.
 
 ```tsx
-const unsubscribe = addListener(language => {
+const unsubscribe = registerListener(language => {
   console.log(language); // 'fr'
 });
 ```
@@ -83,13 +83,13 @@ const fr = {
 
 const localizations = { en, fr };
 
-const { useLocalization, setLanguage, addListener } = createLocalization(localizations, 'en');
+const { useLocalization, setLanguage, registerListener } = createLocalization(localizations, 'en');
 
 const App = () => {
   const { currentLanguage, t } = useLocalization();
 
   useEffect(() => {
-    const unsubscribe = addListener(language => {
+    const unsubscribe = registerListener(language => {
       console.log(language); // 'en' | 'fr'
     });
     return () => {
@@ -119,12 +119,12 @@ const App = () => {
     - `useLocalization`
     - `translate`
     - `setLanguage`
-    - `addListener`
+    - `registerListener`
     - `getLanguage`
     - `getDefaultLanguage`
 - `useLocalization<T extends Translations<T>>(): object`: A React hook that returns the current language and a t function to translate keys.
 - `translate<T extends Translations<T>>(...args: TranslateArgs<T>): string`: Translate a key using the current language and an optional set of values.
 - `setLanguage<T extends Translations<T>>(value: keyof T): void`: Change the current language.
-- `addListener<T extends Translations<T>>(listener: LocaleListener<T>): () => boolean`: Subscribe to language changes. It returns an unsubscribe function.
+- `registerListener<T extends Translations<T>>(listener: LocaleListener<T>): () => boolean`: Subscribe to language changes. It returns an unsubscribe function.
 - `getLanguage<T extends Translations<T>>(): keyof T`: Returns the current language.
 - `getDefaultLanguage<T extends Translations<T>>(): keyof T`: Returns the default language.
