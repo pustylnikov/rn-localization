@@ -40,11 +40,13 @@ export function setLanguage<T extends Translations<T>>(value: keyof T): void {
     const listeners = $getListeners<T>();
 
     let count = 0;
+    let total = 0;
     let batch: LocaleListener<Translations<T>>[] = [];
     listeners.forEach(listener => {
       batch.push(listener);
-      count++;
-      if (count === 10 || count === listeners.size) {
+      ++count;
+      ++total;
+      if (count === 10 || total === listeners.size) {
         const $batch = batch;
         setImmediate(() => {
           $batch.forEach(f => f(value));

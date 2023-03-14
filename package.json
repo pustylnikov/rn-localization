@@ -1,10 +1,10 @@
 {
   "name": "@anvilapp/rn-localization",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "A lightweight and flexible localization library for React Native.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "author": "yura.pustylnikov@gmail.com",
+  "author": "anvilapp.team@gmail.com",
   "license": "MIT",
   "homepage": "https://github.com/pustylnikov/rn-localization",
   "scripts": {
