@@ -2,6 +2,13 @@ import {registerListener, createLocalization, getLanguage, setLanguage, translat
 
 jest.useFakeTimers();
 
+jest.mock('react-native-localize', () => ({
+  getLocales: jest.fn(() => [
+    {countryCode: 'US', languageTag: 'en-US', languageCode: 'en', isRTL: false},
+    {countryCode: 'FR', languageTag: 'fr-FR', languageCode: 'fr', isRTL: false},
+  ]),
+}));
+
 beforeEach(() => {
   const en = {
     WELCOME: 'Welcome',

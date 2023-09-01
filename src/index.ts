@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useMemo, useState} from 'react';
+import {getLocales} from 'react-native-localize';
 import {LocaleListener, Translations, Args, TranslateArgs} from './types';
-import {NativeModules, Platform} from 'react-native';
 
 const $listeners = new Map<symbol, LocaleListener<Translations<any>>>();
 
@@ -142,32 +142,11 @@ export function getDefaultLanguage<T extends Translations<T>>(): keyof T {
 }
 
 function detectDefaultLanguage(supportedLanguages: string[], fallbackLanguage?: string): string {
-  try {
-    const deviceLanguages = getDeviceLanguages();
-
-    for (let i = 0; i < deviceLanguages.length; i++) {
-      const [language] = deviceLanguages[i].toLowerCase().split('-');
-      if (supportedLanguages.includes(language)) {
-        return language;
-      }
-    }
-  } catch (e) {}
-
-  return fallbackLanguage || supportedLanguages[0];
-}
-
-function getDeviceLanguages(): string[] {
-  if (Platform.OS === 'ios') {
-    const deviceLanguages = NativeModules.SettingsManager.settings.AppleLanguages;
-    if (deviceLanguages && Array.isArray(deviceLanguages)) {
-      return deviceLanguages;
-    }
-  } else {
-    const deviceLanguage = NativeModules.I18nManager.localeIdentifier;
-    if (deviceLanguage && typeof deviceLanguage === 'string') {
-      return [deviceLanguage];
+  const locales = getLocales();
+  for (let locale of locales) {
+    if (supportedLanguages.includes(locale.languageCode)) {
+      return locale.languageCode;
     }
   }
-
-  return [];
+  return fallbackLanguage || supportedLanguages[0];
 }
